@@ -1,0 +1,25 @@
+Options -Indexes
+
+<IfModule mod_rewrite.c>
+RewriteEngine On
+# No hardcoded RewriteBase: works whether the app lives in /unified/, another
+# sub-folder, or the domain root (public_html). BASE_URL is auto-detected in PHP.
+
+# Protect sensitive directories from direct browser access
+RewriteRule ^(config|database|includes|libs|_retired|exports)(/.*)?$ - [F,L,NC]
+
+# Protect sensitive files
+RewriteRule \.(sql|lock|json|md|log|ini|git|example)$ - [F,L,NC]
+RewriteRule ^(\.|.*/\.)(?!well-known) - [F,L,NC]
+
+# Serve existing static files (CSS, JS, images, fonts, uploads) directly
+RewriteCond %{REQUEST_FILENAME} -f
+RewriteCond %{REQUEST_URI} !\.php$ [NC]
+RewriteRule ^ - [L]
+
+# Everything else (clean URLs, and legacy *.php URLs) goes through the router.
+# router.php itself is excluded to avoid a rewrite loop.
+RewriteCond %{REQUEST_URI} !(^|/)router\.php$ [NC]
+RewriteRule ^ router.php [L,QSA]
+</IfModule>
+
